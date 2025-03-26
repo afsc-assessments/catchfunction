@@ -8,7 +8,7 @@ Depends:
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.2.9000
+RoxygenNote: 7.3.2
 Imports: systemfit
 Suggests: 
     knitr,

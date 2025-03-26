@@ -8,8 +8,10 @@ urlcolor: blue
 output: rmarkdown::pdf_document
 vignette: >
   %\VignetteIndexEntry{ATTACH_vignette}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -234,6 +236,103 @@ As you can see, in 5.1 Pollock's estimated catch is the same as in the status qu
 ## Manuscript for the work that laid the foundation for the ATTACH package
 
 Alan Haynie, Amanda Faig, Kirstin Holsman, Anne Hollowed, Jonathan Reum, Steve Kasperski, and  Mary Furuness. "Predicting future management allocations and catch under the Bering Sea and Aleutian Islands Ecosystem Cap." In Prep: contact alan.haynie@noaa.gov.
+
+
+```{r }
+cdf <- readRDS("inst/BSAI_catch_data_2020.rds")
+tdf <- readRDS("inst/data_GHS_with2020.rds")
+head(tdf)
+tail(cdf)
+unique(cdf$SUBAREA)
+library(tidyverse)
+df <- left_join(cdf[,-1],tdf[,-1])
+df |> filter(!is.na(ABC),!is.na(AREA)) |> group_by(YEAR) |> summarise(ABC=sum(ABC),TAC=sum(TAC), Catch=sum(TOTALCATCH))
+
+tdf |> filter(!is.na(ABC),!is.na(AREA)) |> group_by(YEAR,AREA) |> summarise(ABC=sum(ABC),TAC=sum(TAC) )
+# 1. Prepare your data (using example data if you don't have real data yet)
+stock_names <- c("Pollock", "Cod", "Flatfish")
+years <- 1992:2017
+
+# Simulate historical data
+set.seed(123)
+historical_tac <- data.frame(
+  Pollock = exp(rnorm(length(years), mean = 12, sd = 0.1)),
+  Cod = exp(rnorm(length(years), mean = 10, sd = 0.2)),
+  Flatfish = exp(rnorm(length(years), mean = 9, sd = 0.15))
+)
+rownames(historical_tac) <- years
+
+historical_abc <- data.frame(
+  Pollock = exp(rnorm(length(years), mean = 12.1, sd = 0.1)),
+  Cod = exp(rnorm(length(years), mean = 10.1, sd = 0.2)),
+  Flatfish = exp(rnorm(length(years), mean = 9.1, sd = 0.15))
+)
+rownames(historical_abc) <- years
+
+historical_catch <- data.frame(
+  Pollock = historical_tac$Pollock * exp(rnorm(length(years), mean = 0, sd = 0.05)),
+  Cod = historical_tac$Cod * exp(rnorm(length(years), mean = 0, sd = 0.1)),
+  Flatfish = historical_tac$Flatfish * exp(rnorm(length(years), mean = 0, sd = 0.08))
+)
+rownames(historical_catch) <- years
+
+# Define events
+event_definitions <- list(
+  list(name = "Amend80", active_years = 2008:2017),
+  list(name = "SSL_closure", active_years = 2011:2014),
+  list(name = "SSL_reopening", active_years = 2015:2017)
+)
+
+# 2. Prepare event data
+event_data <- prepare_event_data(years, event_definitions)
+
+# 3. Estimate coefficients
+tac_coefs <- estimate_tac_coefficients(
+  tac_data = historical_tac,
+  abc_data = historical_abc,
+  event_data = event_data,
+  stock_names = stock_names
+)
+
+catch_coefs <- estimate_catch_coefficients(
+  catch_data = historical_catch,
+  tac_data = historical_tac,
+  event_data = event_data,
+  stock_names = stock_names
+)
+
+# 4. Set up event settings for prediction (using last year's settings)
+event_settings <- c(Amend80 = 1, SSL_closure = 0, SSL_reopening = 1)
+
+# 5. Make predictions for new ABC values
+# Example: Use last year's ABC values multiplied by 1.1 for projection
+new_abc <- historical_abc["2017", ] * 1.1
+new_abc_df <- as.data.frame(t(new_abc))
+rownames(new_abc_df) <- "2018"
+
+# Predict TAC
+tac_pred <- predict_tac(
+  abc_data = new_abc_df,
+  model_coefs = tac_coefs,
+  event_settings = event_settings
+)
+
+# Predict catch (using the predicted TAC)
+catch_pred <- predict_catch(
+  tac_data = tac_pred,
+  model_coefs = catch_coefs,
+  event_settings = event_settings,
+  abc_data = new_abc_df  # Optional: include to enforce ABC and cap constraints
+)
+
+# View results
+print("Predicted TAC:")
+print(tac_pred)
+print("Predicted Catch:")
+print(catch_pred)
+
+
+```
 
 ## Publications using the ATTACH (aka catchfunction) package
 

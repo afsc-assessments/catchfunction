@@ -91,7 +91,7 @@ This function predicts the BS catch for each species whose ABC is given.  It is 
 
 If you have any questions, please contact Amanda Faig (e-mail: amanda.faig@noaa.gov, call: X-4281).
 
-This version last updated June 2018
+This version last updated March 2023
 
 Currently programmed scenarios: \cr
 Scenario 1: Status Quo (Log-Linear) \cr
@@ -104,12 +104,12 @@ Scenario 5.2: Fiddle with a single species--calculate the rest assuming the ABC 
 \examples{
 catch_function(1, Pollock = 2e6, Arrowtooth = 2e5, Yellowfin = 2e5)
 catch_function(3, Pollock = 2e6, Yellowfin = 2e5, PCod = 1e5)
-catch_function(5.1, spptomult = "Arrowtooth", multiplier = 2, 
+catch_function(5.1, spptomult = "Arrowtooth", multiplier = 2,
                  Pollock = 2e6, Arrowtooth = 2e5, Yellowfin = 2e5)
-catch_function(5.1, spptomult = c("Arrowtooth","Yellowfin"), multiplier = c(0.5,1), 
+catch_function(5.1, spptomult = c("Arrowtooth","Yellowfin"), multiplier = c(0.5,1),
                  Pollock = 2e6, Arrowtooth = 2e5, Yellowfin = 2e5)
-catch_function(5.2, spptomult = "Arrowtooth", multiplier = 2, 
+catch_function(5.2, spptomult = "Arrowtooth", multiplier = 2,
                  Pollock = 2e6, Arrowtooth = 2e5, Yellowfin = 2e5)
-catch_function(5.2, spptomult = c("Arrowtooth","Yellowfin"), multiplier = c(0.5,1), 
+catch_function(5.2, spptomult = c("Arrowtooth","Yellowfin"), multiplier = c(0.5,1),
                  Pollock = 2e6, Arrowtooth = 2e5, Yellowfin = 2e5)
 }
